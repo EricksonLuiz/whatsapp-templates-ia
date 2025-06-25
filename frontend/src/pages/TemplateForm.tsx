@@ -1,92 +1,131 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useApp } from '../contexts/AppContext';
-import { ArrowLeft, Save, FileText, MessageSquare } from 'lucide-react';
-import Card from '../components/Card';
-import { useWebhookSettings } from '../hooks/useWebhookSettings';
-import { sendWebhook } from '../utils/sendWebhook';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useApp } from "../contexts/AppContext";
+import { ArrowLeft, Save, FileText, MessageSquare } from "lucide-react";
+import Card from "../components/Card";
+import { useWebhookSettings } from "../hooks/useWebhookSettings";
+import { sendWebhook } from "../utils/sendWebhook";
+
+interface Template {
+  id: string;
+  name: string;
+  type: string;
+  app: string;
+  active: boolean;
+  title: string;
+  body: string;
+  footer: string;
+  variables: string[];
+  buttons: string[];
+  image?: string;
+  categoryId: string;
+  clientId: string;
+}
 
 const TemplateForm = () => {
-  const { clientId, categoryId } = useParams<{ clientId: string; categoryId: string }>();
+  const { clientId, categoryId } = useParams<{
+    clientId: string;
+    categoryId: string;
+  }>();
   const { addTemplate } = useApp();
   const { urls } = useWebhookSettings();
   const navigate = useNavigate();
-  
+
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [formData, setFormData] = useState({
-    name: '',
-    type: 'texto',
-    app: 'whatsapp',
+    name: "",
+    type: "texto",
+    app: "whatsapp",
     active: true,
-    title: '',
-    body: '',
-    footer: '',
+    title: "",
+    body: "",
+    footer: "",
     variables: [] as string[],
     buttons: [] as string[],
-    image: ''
+    image: "",
   });
 
-  const [newVariable, setNewVariable] = useState('');
-  const [newButton, setNewButton] = useState('');
+  const [newVariable, setNewVariable] = useState("");
+  const [newButton, setNewButton] = useState("");
+
+  useEffect(() => {
+    fetch("/api/templates")
+      .then((res) => res.json())
+      .then((data) => {
+        setTemplates(data);
+      });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     addTemplate({
       ...formData,
       categoryId: categoryId!,
-      clientId: clientId!
+      clientId: clientId!,
     });
 
     // Envia webhook se configurado
     if (urls.template) {
-      await sendWebhook(urls.template, {
-        ...formData,
-        categoryId: categoryId!,
-        clientId: clientId!,
-      }, "template");
+      await sendWebhook(
+        urls.template,
+        {
+          ...formData,
+          categoryId: categoryId!,
+          clientId: clientId!,
+        },
+        "template"
+      );
     }
     navigate(`/cliente/${clientId}/categoria/${categoryId}/templates`);
   };
 
   const addVariable = () => {
-    if (newVariable.trim() && !formData.variables.includes(newVariable.trim())) {
-      setFormData(prev => ({
+    if (
+      newVariable.trim() &&
+      !formData.variables.includes(newVariable.trim())
+    ) {
+      setFormData((prev) => ({
         ...prev,
-        variables: [...prev.variables, newVariable.trim()]
+        variables: [...prev.variables, newVariable.trim()],
       }));
-      setNewVariable('');
+      setNewVariable("");
     }
   };
 
   const removeVariable = (variable: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      variables: prev.variables.filter(v => v !== variable)
+      variables: prev.variables.filter((v) => v !== variable),
     }));
   };
 
   const addButton = () => {
     if (newButton.trim() && !formData.buttons.includes(newButton.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        buttons: [...prev.buttons, newButton.trim()]
+        buttons: [...prev.buttons, newButton.trim()],
       }));
-      setNewButton('');
+      setNewButton("");
     }
   };
 
   const removeButton = (button: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      buttons: prev.buttons.filter(b => b !== button)
+      buttons: prev.buttons.filter((b) => b !== button),
     }));
   };
+
+  if (templates.length === 0) return <div>Carregando...</div>;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center space-x-4">
         <button
-          onClick={() => navigate(`/cliente/${clientId}/categoria/${categoryId}/templates`)}
+          onClick={() =>
+            navigate(`/cliente/${clientId}/categoria/${categoryId}/templates`)
+          }
           className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft className="text-white" size={20} />
@@ -108,7 +147,9 @@ const TemplateForm = () => {
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Digite o nome do template"
                 required
@@ -121,7 +162,9 @@ const TemplateForm = () => {
               </label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, type: e.target.value }))
+                }
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="texto">Texto</option>
@@ -141,7 +184,9 @@ const TemplateForm = () => {
               </label>
               <select
                 value={formData.app}
-                onChange={(e) => setFormData(prev => ({ ...prev, app: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, app: e.target.value }))
+                }
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="whatsapp">WhatsApp</option>
@@ -156,8 +201,13 @@ const TemplateForm = () => {
                 Status
               </label>
               <select
-                value={formData.active ? 'true' : 'false'}
-                onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.value === 'true' }))}
+                value={formData.active ? "true" : "false"}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    active: e.target.value === "true",
+                  }))
+                }
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="true">Ativo</option>
@@ -173,7 +223,9 @@ const TemplateForm = () => {
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, title: e.target.value }))
+              }
               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Título da mensagem"
             />
@@ -185,7 +237,9 @@ const TemplateForm = () => {
             </label>
             <textarea
               value={formData.body}
-              onChange={(e) => setFormData(prev => ({ ...prev, body: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, body: e.target.value }))
+              }
               rows={6}
               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               placeholder="Digite o corpo da mensagem..."
@@ -200,7 +254,9 @@ const TemplateForm = () => {
             <input
               type="text"
               value={formData.footer}
-              onChange={(e) => setFormData(prev => ({ ...prev, footer: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, footer: e.target.value }))
+              }
               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Rodapé da mensagem"
             />
@@ -215,7 +271,9 @@ const TemplateForm = () => {
                 type="text"
                 value={newVariable}
                 onChange={(e) => setNewVariable(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addVariable())}
+                onKeyPress={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addVariable())
+                }
                 className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Digite uma variável (ex: nome, email)"
               />
@@ -255,7 +313,9 @@ const TemplateForm = () => {
                 type="text"
                 value={newButton}
                 onChange={(e) => setNewButton(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addButton())}
+                onKeyPress={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addButton())
+                }
                 className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Digite o texto do botão"
               />
@@ -289,7 +349,11 @@ const TemplateForm = () => {
           <div className="flex space-x-4 pt-4">
             <button
               type="button"
-              onClick={() => navigate(`/cliente/${clientId}/categoria/${categoryId}/templates`)}
+              onClick={() =>
+                navigate(
+                  `/cliente/${clientId}/categoria/${categoryId}/templates`
+                )
+              }
               className="flex-1 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200 font-medium"
             >
               Cancelar

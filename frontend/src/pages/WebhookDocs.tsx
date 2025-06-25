@@ -1,8 +1,8 @@
-
 import React, { useState } from "react";
-import Card from "@/components/Card";
-import { useWebhookSettings, WebhookTypes } from "@/hooks/useWebhookSettings";
-import { sendWebhook } from "@/utils/sendWebhook";
+import Card from "../components/Card";
+import { useWebhookSettings } from "../hooks/useWebhookSettings";
+import type { WebhookTypes } from "../hooks/useWebhookSettings";
+import { sendWebhook } from "../utils/sendWebhook";
 import { Link } from "react-router-dom";
 
 const WEBHOOK_LABELS: Record<WebhookTypes, string> = {
@@ -56,7 +56,10 @@ const EXAMPLES: Record<WebhookTypes, any> = {
 };
 
 // EXAMPLES for update and delete: just add id, use same fields as create for update, only id for delete.
-function getExample(type: WebhookTypes, operation: "create" | "update" | "delete") {
+function getExample(
+  type: WebhookTypes,
+  operation: "create" | "update" | "delete"
+) {
   if (operation === "create") return EXAMPLES[type];
   if (operation === "update") return { id: `${type}_id`, ...EXAMPLES[type] };
   if (operation === "delete") return { id: `${type}_id` };
@@ -66,19 +69,33 @@ function getExample(type: WebhookTypes, operation: "create" | "update" | "delete
 function WebhookDocs() {
   const { urls, updateURL, resetURLs } = useWebhookSettings();
   const [type, setType] = useState<WebhookTypes>("client");
-  const [operation, setOperation] = useState<"create" | "update" | "delete">("create");
+  const [operation, setOperation] = useState<"create" | "update" | "delete">(
+    "create"
+  );
   const [testJson, setTestJson] = useState<string>(
     JSON.stringify(getExample("client", "create"), null, 2)
   );
 
   function handleTypeChange(e: React.ChangeEvent<HTMLSelectElement>) {
     setType(e.target.value as WebhookTypes);
-    setTestJson(JSON.stringify(getExample(e.target.value as WebhookTypes, operation), null, 2));
+    setTestJson(
+      JSON.stringify(
+        getExample(e.target.value as WebhookTypes, operation),
+        null,
+        2
+      )
+    );
   }
 
   function handleOperationChange(e: React.ChangeEvent<HTMLSelectElement>) {
     setOperation(e.target.value as "create" | "update" | "delete");
-    setTestJson(JSON.stringify(getExample(type, e.target.value as "create" | "update" | "delete"), null, 2));
+    setTestJson(
+      JSON.stringify(
+        getExample(type, e.target.value as "create" | "update" | "delete"),
+        null,
+        2
+      )
+    );
   }
 
   async function handleTest(e: React.FormEvent) {
@@ -97,13 +114,19 @@ function WebhookDocs() {
 
   return (
     <div className="max-w-2xl mx-auto py-10 space-y-8">
-      <h1 className="text-3xl font-bold text-white mb-2">Webhooks: Integração com n8n/automação</h1>
+      <h1 className="text-3xl font-bold text-white mb-2">
+        Webhooks: Integração com n8n/automação
+      </h1>
       <Card className="space-y-6">
-        <h2 className="font-semibold text-lg text-white">Configuração de URLs</h2>
+        <h2 className="font-semibold text-lg text-white">
+          Configuração de URLs
+        </h2>
         <form className="space-y-4">
           {(Object.keys(urls) as WebhookTypes[]).map((t) => (
             <div key={t} className="flex items-center space-x-2">
-              <label className="min-w-[120px] text-gray-300 font-medium">{WEBHOOK_LABELS[t]}</label>
+              <label className="min-w-[120px] text-gray-300 font-medium">
+                {WEBHOOK_LABELS[t]}
+              </label>
               <input
                 type="url"
                 value={urls[t]}
@@ -124,7 +147,9 @@ function WebhookDocs() {
       </Card>
 
       <Card className="space-y-6">
-        <h2 className="font-semibold text-lg text-white">Exemplo de Payload & Teste de Envio</h2>
+        <h2 className="font-semibold text-lg text-white">
+          Exemplo de Payload & Teste de Envio
+        </h2>
         <form onSubmit={handleTest} className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             <select
@@ -133,7 +158,9 @@ function WebhookDocs() {
               onChange={handleTypeChange}
             >
               {Object.entries(WEBHOOK_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ))}
             </select>
             <select
@@ -151,7 +178,7 @@ function WebhookDocs() {
             className="w-full px-3 py-2 h-44 bg-white/10 border border-white/20 rounded-lg text-sm text-white font-mono outline-none resize-none"
             spellCheck={false}
             value={testJson}
-            onChange={e => setTestJson(e.target.value)}
+            onChange={(e) => setTestJson(e.target.value)}
           />
           <button
             type="submit"
@@ -162,28 +189,40 @@ function WebhookDocs() {
         </form>
         <div className="text-xs text-gray-400">
           O payload é enviado por <b>POST</b> em JSON. <br />
-          Exemplo de uso do payload:<br />
+          Exemplo de uso do payload:
+          <br />
           <code className="block text-[12px] bg-black/40 rounded px-2 py-1 mt-1 mb-2">{`{
   "entity": "${type}",
   "operation": "${operation}",
   "timestamp": "...",
   ...payload
 }`}</code>
-          <b>Importante:</b> Como é feito direto do navegador, configure segurança no seu n8n!
+          <b>Importante:</b> Como é feito direto do navegador, configure
+          segurança no seu n8n!
         </div>
       </Card>
       <Card className="space-y-2 bg-gray-900/50 border-gray-700">
         <h2 className="font-semibold text-lg text-white">Como usar no n8n?</h2>
         <ol className="list-decimal list-inside text-gray-200 space-y-2 text-[15px]">
-          <li>Crie um node "Webhook" no seu fluxo e copie a URL pública dele.</li>
+          <li>
+            Crie um node "Webhook" no seu fluxo e copie a URL pública dele.
+          </li>
           <li>Cole a URL no campo correspondente acima.</li>
-          <li>Ao criar, editar ou excluir um cadastro, o payload será enviado automaticamente.</li>
-          <li>No n8n, continue o fluxo salvando no Google Sheets, banco, email etc.</li>
+          <li>
+            Ao criar, editar ou excluir um cadastro, o payload será enviado
+            automaticamente.
+          </li>
+          <li>
+            No n8n, continue o fluxo salvando no Google Sheets, banco, email
+            etc.
+          </li>
         </ol>
         <div className="pt-3 text-xs text-gray-400">
-          Para debug, olhe o histórico do fluxo no n8n. O modo <b>no-cors</b> impede que o status HTTP seja lido no frontend.
+          Para debug, olhe o histórico do fluxo no n8n. O modo <b>no-cors</b>{" "}
+          impede que o status HTTP seja lido no frontend.
           <br />
-          Exemplo de integração com Google Sheets: use node "Google Sheets" após o Webhook e mapeie os campos desejados.
+          Exemplo de integração com Google Sheets: use node "Google Sheets" após
+          o Webhook e mapeie os campos desejados.
         </div>
       </Card>
     </div>
