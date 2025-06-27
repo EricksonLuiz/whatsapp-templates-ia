@@ -1,3 +1,5 @@
+// API para testar internamente´
+
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
@@ -26,5 +28,9 @@ app.get("/api/health", (req, res) => {
 
 // Servir front-end (se necessário)
 app.use(express.static(path.join(__dirname, "../public")));
+
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
+});
 
 module.exports = app;
