@@ -1,4 +1,5 @@
 const path = require("path");
+// A Vercel injeta as variáveis de ambiente automaticamente, mas pode manter para o dev local.
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const express = require("express");
@@ -7,16 +8,16 @@ const port = process.env.PORT || 3001;
 
 app.use(express.json());
 
-// Rotas separadas
-app.use("/api/categorias", require("./routes/categorias"));
-app.use("/api/bms", require("./routes/bms"));
-app.use("/api/clientes", require("./routes/clientes"));
-app.use("/api/telefones", require("./routes/telefones"));
-app.use("/api/templates", require("./routes/templates"));
-app.use("/api/cliente-categorias", require("./routes/cliente_categorias"));
+// Rotas separadas (SEM O /api)
+app.use("/categorias", require("./routes/categorias"));
+app.use("/bms", require("./routes/bms"));
+app.use("/clientes", require("./routes/clientes"));
+app.use("/telefones", require("./routes/telefones"));
+app.use("/templates", require("./routes/templates"));
+app.use("/cliente-categorias", require("./routes/cliente_categorias"));
 
-// Rota de health check
-app.get("/api/health", (req, res) => {
+// Rota de health check (SEM O /api)
+app.get("/health", (req, res) => {
   res.status(200).json({
     message: "Servidor funcionando!",
     timestamp: new Date().toISOString(),
@@ -24,7 +25,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Servir front-end (se necessário)
 app.use(express.static(path.join(__dirname, "../public")));
 
+// Exporta o app para a Vercel
 module.exports = app;
