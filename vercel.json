@@ -23,7 +23,8 @@
       "dest": "/frontend/dist/assets/$1"
     },
     {
-      "handle": "filesystem"
+      "src": "/vite.svg",
+      "dest": "/frontend/dist/vite.svg"
     },
     {
       "src": "/(.*)",
